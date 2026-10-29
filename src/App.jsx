@@ -3,16 +3,13 @@ import { GrowthDataProvider, useGrowthData } from './context/GrowthDataContext';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { OverviewTab } from './components/tabs/OverviewTab';
-import { ProgressTab } from './components/tabs/ProgressTab';
-import { ChannelsTab } from './components/tabs/ChannelsTab';
-import { AmbassadorsTab } from './components/tabs/AmbassadorsTab';
+import { AcquisitionTab } from './components/tabs/AcquisitionTab';
 import { ReferralsTab } from './components/tabs/ReferralsTab';
 import { ExperimentsTab } from './components/tabs/ExperimentsTab';
-import { OutreachStudioTab } from './components/tabs/OutreachStudioTab';
 import { RegistrationsTab } from './components/tabs/RegistrationsTab';
 import { DemoModal } from './components/modals/DemoModal';
 import { QuickRegModal } from './components/modals/QuickRegModal';
-import { Info, CheckCircle2 } from 'lucide-react';
+import { Info, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const DashboardContent = () => {
   const { activeTab, toast } = useGrowthData();
@@ -21,19 +18,17 @@ const DashboardContent = () => {
   const renderActiveView = () => {
     switch (activeTab) {
       case 'overview':
-        return <OverviewTab />;
       case 'progress':
-        return <ProgressTab />;
+        return <OverviewTab />;
+      case 'acquisition':
       case 'channels':
-        return <ChannelsTab />;
-      case 'ambassadors':
-        return <AmbassadorsTab />;
+      case 'studio':
+        return <AcquisitionTab />;
       case 'referrals':
+      case 'ambassadors':
         return <ReferralsTab />;
       case 'experiments':
         return <ExperimentsTab />;
-      case 'studio':
-        return <OutreachStudioTab />;
       case 'registrations':
         return <RegistrationsTab />;
       default:
@@ -62,8 +57,10 @@ const DashboardContent = () => {
           <div className={`toast ${toast.type || 'success'}`}>
             {toast.type === 'info' ? (
               <Info size={16} style={{ color: 'var(--accent-cyan)' }} />
+            ) : toast.type === 'warning' ? (
+              <AlertCircle size={16} style={{ color: 'var(--accent-amber)' }} />
             ) : (
-              <CheckCircle2 size={16} style={{ color: '#34d399' }} />
+              <CheckCircle2 size={16} style={{ color: 'var(--accent-emerald)' }} />
             )}
             <span>{toast.message}</span>
           </div>

@@ -27,14 +27,11 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   } = useGrowthData();
 
   const navItems = [
-    { id: 'overview', label: 'Campaign Overview', icon: LayoutDashboard },
-    { id: 'progress', label: 'Velocity & Trajectory', icon: TrendingUp },
-    { id: 'channels', label: 'Acquisition Channels', icon: Share2 },
-    { id: 'ambassadors', label: 'Ambassador Leaderboard', icon: Trophy },
-    { id: 'referrals', label: 'Referral Engine', icon: Link2 },
-    { id: 'experiments', label: 'Growth Experiments (ICE)', icon: FlaskConical },
-    { id: 'studio', label: 'AI Outreach Studio', icon: MessageSquareText },
-    { id: 'registrations', label: 'Demo Registrations', icon: Users },
+    { id: 'overview', label: 'Overview & Trajectory', icon: LayoutDashboard, aliases: ['progress'] },
+    { id: 'acquisition', label: 'Acquisition & Outreach', icon: Share2, aliases: ['channels', 'studio'] },
+    { id: 'referrals', label: 'Referrals & Ambassadors', icon: Link2, aliases: ['ambassadors'] },
+    { id: 'experiments', label: 'Growth Experiments', icon: FlaskConical, aliases: [] },
+    { id: 'registrations', label: 'Student Registrations', icon: Users, aliases: [] },
   ];
 
   const handleNavClick = (tabId) => {
@@ -55,16 +52,16 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
             <h1>
               CampusAI <span className="brand-tag">Ops</span>
             </h1>
-            <p className="brand-subtitle">NxtWave Growth Engine</p>
+            <p className="brand-subtitle">Growth Campaign Manager</p>
           </div>
         </div>
       </div>
 
       <nav className="sidebar-nav">
-        <span className="nav-label">Growth Command Center</span>
+        <span className="nav-label">Campaign Operations</span>
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
+          const isActive = activeTab === item.id || (item.aliases && item.aliases.includes(activeTab));
           return (
             <button
               key={item.id}

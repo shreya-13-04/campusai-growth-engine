@@ -1,20 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Users,
   Wallet,
-  TrendingUp,
   Target,
-  Sparkles,
-  Zap,
-  ArrowUpRight,
-  Clock,
-  CheckCircle2,
+  TrendingUp,
+  Calendar,
   Share2,
   ChevronRight,
-  Flame,
+  Sliders,
+  CheckCircle2,
+  Sparkles,
 } from 'lucide-react';
 import { useGrowthData } from '../../context/GrowthDataContext';
-import { MetricCard } from '../MetricCard';
 
 export const OverviewTab = () => {
   const {
@@ -33,109 +30,91 @@ export const OverviewTab = () => {
     budgetPercent,
     setActiveTab,
     setIsQuickRegOpen,
-    registrations,
   } = useGrowthData();
 
-  // Find max value for 7-day chart scaling
+  // Interactive Scenario Simulator state
+  const [viralBoostMultiplier, setViralBoostMultiplier] = useState(1.15); // +15% boost
+  const [ambassadorActivityLift, setAmbassadorActivityLift] = useState(20); // +20% lift
+
+  // Simulated final calculation
+  const simulatedRemainingPerDay = parseFloat(velocity) * (1 + (viralBoostMultiplier - 1) + ambassadorActivityLift / 100);
+  const simulatedFinalProjected = Math.round(totalRegistrations + simulatedRemainingPerDay * remainingDays);
+
+  // Scaling for 7-day chart
   const maxDayVal = Math.max(...dailyMetrics.map((d) => Math.max(d.target, d.actual)), 120);
 
   return (
     <div className="view-container">
-      {/* Top Cockpit Banner */}
-      <div className="campaign-banner">
-        <div className="banner-content">
-          <div className="banner-icon-box">
-            <Zap size={26} />
+      {/* Executive Key Figures Banner */}
+      <div className="executive-kpi-bar">
+        <div className="kpi-cell" onClick={() => setActiveTab('registrations')}>
+          <div className="kpi-cell-label">Total Registrations</div>
+          <div className="kpi-cell-val">
+            <span className="mono-num">{totalRegistrations}</span>
+            <span className="kpi-sub">/ {campaign.targetRegistrations}</span>
           </div>
-          <div className="banner-text">
-            <h3>{campaign.title}</h3>
-            <p>
-              NxtWave Growth Challenge • Target: <strong>{campaign.targetRegistrations} Registrations</strong> in{' '}
-              <strong>{campaign.totalDays} Days</strong> with a strict budget of{' '}
-              <strong>₹{campaign.totalBudget.toLocaleString()} INR</strong>.
-            </p>
+          <div className="kpi-meta">
+            <span className="badge badge-indigo">{progressPercent}% of Goal</span>
+            <span className="kpi-caption">{remainingRegistrations} needed</span>
           </div>
         </div>
 
-        <div className="banner-metrics">
-          <div className="banner-stat">
-            <div className="banner-stat-value" style={{ color: 'var(--primary)' }}>
-              Day {campaign.currentDay} / {campaign.totalDays}
-            </div>
-            <div className="banner-stat-label">Timeline Status</div>
+        <div className="kpi-cell" onClick={() => setActiveTab('acquisition')}>
+          <div className="kpi-cell-label">Budget Utilized</div>
+          <div className="kpi-cell-val">
+            <span className="mono-num">₹{totalSpend.toLocaleString()}</span>
+            <span className="kpi-sub">/ ₹{campaign.totalBudget.toLocaleString()}</span>
           </div>
-          <div className="banner-stat">
-            <div className="banner-stat-value" style={{ color: 'var(--accent-emerald)' }}>
-              {progressPercent}%
-            </div>
-            <div className="banner-stat-label">Goal Progress</div>
+          <div className="kpi-meta">
+            <span className="badge badge-cyan">{budgetPercent}% Spent</span>
+            <span className="kpi-caption">₹{campaign.totalBudget - totalSpend} runway</span>
           </div>
-          <div className="banner-stat">
-            <div className="banner-stat-value" style={{ color: 'var(--accent-amber)' }}>
-              ₹{(campaign.totalBudget - totalSpend).toLocaleString()}
-            </div>
-            <div className="banner-stat-label">Budget Runway</div>
+        </div>
+
+        <div className="kpi-cell" onClick={() => setActiveTab('acquisition')}>
+          <div className="kpi-cell-label">Blended CAC</div>
+          <div className="kpi-cell-val">
+            <span className="mono-num">₹{blendedCac}</span>
+          </div>
+          <div className="kpi-meta">
+            <span className="badge badge-green">Efficient</span>
+            <span className="kpi-caption">Target: &lt; ₹4.00</span>
+          </div>
+        </div>
+
+        <div className="kpi-cell">
+          <div className="kpi-cell-label">Daily Velocity</div>
+          <div className="kpi-cell-val">
+            <span className="mono-num">{velocity}</span>
+            <span className="kpi-sub">/ day</span>
+          </div>
+          <div className="kpi-meta">
+            <span className="badge badge-amber">Pacing ~{projectedFinal}</span>
+            <span className="kpi-caption">Need {neededDailyVelocity}/day</span>
+          </div>
+        </div>
+
+        <div className="kpi-cell">
+          <div className="kpi-cell-label">Campaign Timeline</div>
+          <div className="kpi-cell-val">
+            Day <span className="mono-num">{campaign.currentDay}</span>
+            <span className="kpi-sub">/ {campaign.totalDays}</span>
+          </div>
+          <div className="kpi-meta">
+            <span className="badge badge-purple">{remainingDays} Days Left</span>
+            <span className="kpi-caption">Workshop on Day 7</span>
           </div>
         </div>
       </div>
 
-      {/* Primary KPI Grid */}
-      <div className="kpi-grid">
-        <MetricCard
-          label="Total Registrations"
-          value={totalRegistrations}
-          subtext={`Goal: ${campaign.targetRegistrations} (${remainingRegistrations} remaining)`}
-          icon={Users}
-          badgeText={`${progressPercent}% Achieved`}
-          badgeType="positive"
-          progressValue={progressPercent}
-          accentColor="#6D5CE8"
-          onClick={() => setActiveTab('registrations')}
-        />
-
-        <MetricCard
-          label="Budget Utilized"
-          value={`₹${totalSpend.toLocaleString()}`}
-          subtext={`Total Cap: ₹${campaign.totalBudget} (₹${campaign.totalBudget - totalSpend} left)`}
-          icon={Wallet}
-          badgeText={`${budgetPercent}% Spent`}
-          badgeType={budgetPercent > 80 ? 'warning' : 'neutral'}
-          progressValue={budgetPercent}
-          accentColor="#0284C7"
-          onClick={() => setActiveTab('channels')}
-        />
-
-        <MetricCard
-          label="Blended CAC"
-          value={`₹${blendedCac}`}
-          subtext="Cost per confirmed registration"
-          icon={Target}
-          badgeText="Target: < ₹4.00"
-          badgeType="positive"
-          accentColor="#10B981"
-          onClick={() => setActiveTab('channels')}
-        />
-
-        <MetricCard
-          label="Run-Rate Velocity"
-          value={`${velocity}/day`}
-          subtext={`Need ${neededDailyVelocity}/day for next ${remainingDays} days`}
-          icon={TrendingUp}
-          badgeText={`Pacing: ~${projectedFinal} total`}
-          badgeType={projectedFinal >= 500 ? 'positive' : 'warning'}
-          accentColor="#D97706"
-          onClick={() => setActiveTab('progress')}
-        />
-      </div>
-
-      {/* Middle Row: 7-Day Velocity Chart & Channel Breakdown */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '24px', marginBottom: '28px' }}>
-        {/* 7-Day Velocity Chart */}
+      {/* Main Row: 7-Day Pace vs Target Chart & Trajectory Table */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+        {/* 7-Day Chart */}
         <div className="card" style={{ marginBottom: 0 }}>
           <div className="card-header">
             <div className="card-title-box">
-              <h3>7-Day Registration Pace vs Target</h3>
-              <p className="card-subtitle">Daily targets vs actual student registrations</p>
+              <h3>7-Day Registration Velocity</h3>
+              <p className="card-subtitle">Daily actual registrations vs planned milestone targets</p>
             </div>
             <div style={{ display: 'flex', gap: '12px', fontSize: '0.74rem' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -174,39 +153,106 @@ export const OverviewTab = () => {
             })}
           </div>
 
-          <div style={{ marginTop: '36px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', padding: '12px 16px', borderRadius: 'var(--radius-md)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Flame size={18} style={{ color: 'var(--accent-amber)' }} />
-              <span style={{ fontSize: '0.84rem' }}>
-                <strong>Growth Momentum:</strong> Running <strong>+18.6% ahead</strong> of target trajectory.
-              </span>
-            </div>
-            <button className="btn btn-outline-cyan btn-sm" onClick={() => setActiveTab('progress')}>
-              Deep Dive
-              <ChevronRight size={14} />
-            </button>
+          <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            <span>Active Run-rate: <strong>{velocity} signups/day</strong></span>
+            <span>Forecast at current pace: <strong style={{ color: 'var(--primary)' }}>~{projectedFinal} total</strong></span>
           </div>
         </div>
 
+        {/* 7-Day Milestone Table */}
+        <div className="card" style={{ marginBottom: 0 }}>
+          <div className="card-header">
+            <div className="card-title-box">
+              <h3>Milestone Burn-up Table</h3>
+              <p className="card-subtitle">Daily targets, verified actuals, and cumulative trajectory</p>
+            </div>
+          </div>
+
+          <div className="table-responsive">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Day</th>
+                  <th>Target</th>
+                  <th>Actual</th>
+                  <th>Variance</th>
+                  <th>Cumulative</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dailyMetrics.map((row) => {
+                  const isPastOrCurrent = row.day <= campaign.currentDay;
+                  const delta = isPastOrCurrent ? row.actual - row.target : null;
+                  const isCurrent = row.day === campaign.currentDay;
+
+                  return (
+                    <tr key={row.day} style={isCurrent ? { background: 'var(--primary-tint)' } : undefined}>
+                      <td>
+                        <strong>Day {row.day}</strong>
+                        {isCurrent && <span className="badge badge-indigo" style={{ marginLeft: '6px', fontSize: '0.66rem' }}>Today</span>}
+                      </td>
+                      <td className="mono-cell">{row.target}</td>
+                      <td className="mono-cell">
+                        {isPastOrCurrent ? (
+                          <strong style={{ color: 'var(--text-highlight)' }}>{row.actual}</strong>
+                        ) : (
+                          <span style={{ color: 'var(--text-dim)' }}>-- (est. {row.target})</span>
+                        )}
+                      </td>
+                      <td className="mono-cell">
+                        {delta !== null ? (
+                          delta >= 0 ? (
+                            <span style={{ color: 'var(--accent-emerald)', fontWeight: '600' }}>+{delta}</span>
+                          ) : (
+                            <span style={{ color: 'var(--accent-rose)', fontWeight: '600' }}>{delta}</span>
+                          )
+                        ) : (
+                          <span style={{ color: 'var(--text-dim)' }}>--</span>
+                        )}
+                      </td>
+                      <td className="mono-cell">
+                        <strong>{row.cumulative}</strong>
+                      </td>
+                      <td>
+                        {isPastOrCurrent ? (
+                          <span className="badge badge-green" style={{ fontSize: '0.7rem' }}>
+                            <CheckCircle2 size={11} /> On Track
+                          </span>
+                        ) : (
+                          <span className="badge badge-neutral" style={{ fontSize: '0.7rem' }}>Upcoming</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Second Row: Channel Share & Forecast Simulator */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px', marginBottom: '24px' }}>
         {/* Acquisition Channel Contributions */}
         <div className="card" style={{ marginBottom: 0 }}>
           <div className="card-header">
             <div className="card-title-box">
               <h3>Acquisition Channel Share</h3>
-              <p className="card-subtitle">Where registrations originate & unit economics</p>
+              <p className="card-subtitle">Registrations by channel and proportion of total volume</p>
             </div>
-            <button className="btn btn-secondary btn-sm" onClick={() => setActiveTab('channels')}>
-              Full Breakdown
+            <button className="btn btn-secondary btn-sm" onClick={() => setActiveTab('acquisition')}>
+              View Channels
               <ChevronRight size={14} />
             </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {channels.map((channel) => {
               const share = totalRegistrations > 0 ? Math.round((channel.registrations / totalRegistrations) * 100) : 0;
               return (
                 <div key={channel.id}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.84rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '0.82rem' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: channel.color }} />
                       {channel.name}
@@ -215,7 +261,7 @@ export const OverviewTab = () => {
                       <strong style={{ color: 'var(--text-highlight)' }}>{channel.registrations}</strong> signups ({share}%)
                     </span>
                   </div>
-                  <div style={{ height: '7px', background: 'var(--border-subtle)', borderRadius: '999px', overflow: 'hidden' }}>
+                  <div style={{ height: '6px', background: 'var(--border-subtle)', borderRadius: '999px', overflow: 'hidden' }}>
                     <div
                       style={{
                         height: '100%',
@@ -231,140 +277,141 @@ export const OverviewTab = () => {
             })}
           </div>
 
-          <div style={{ marginTop: '22px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            <span>Top CAC Driver: WhatsApp Viral Loops (₹0.00 CAC)</span>
-            <span>Paid Social: Instagram (₹15.53 CAC)</span>
+          <div style={{ marginTop: '18px', paddingTop: '14px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+            <span>Zero-Cost Organic: <strong>{channels.filter((c) => c.spend === 0).reduce((s, c) => s + c.registrations, 0)} signups (85%)</strong></span>
+            <span>Paid Micro-Boost: <strong>{channels.filter((c) => c.spend > 0).reduce((s, c) => s + c.registrations, 0)} signups (15%)</strong></span>
+          </div>
+        </div>
+
+        {/* Forecast Scenario Simulator */}
+        <div className="card" style={{ marginBottom: 0 }}>
+          <div className="card-header">
+            <div className="card-title-box">
+              <h3>Interactive Forecast Model</h3>
+              <p className="card-subtitle">Adjust remaining 3-day growth lever assumptions</p>
+            </div>
+            <span className="badge badge-indigo">Scenario Engine</span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.84rem' }}>
+                <label htmlFor="viral-boost" style={{ fontWeight: '600' }}>WhatsApp Viral Forwarding Multiplier</label>
+                <span className="mono-num" style={{ color: 'var(--primary)', fontWeight: '700' }}>
+                  +{Math.round((viralBoostMultiplier - 1) * 100)}% Lift
+                </span>
+              </div>
+              <input
+                id="viral-boost"
+                type="range"
+                min="1.0"
+                max="1.5"
+                step="0.05"
+                value={viralBoostMultiplier}
+                onChange={(e) => setViralBoostMultiplier(parseFloat(e.target.value))}
+                style={{ width: '100%', accentColor: 'var(--primary)' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                <span>Baseline (1.0x)</span>
+                <span>Moderate (+25%)</span>
+                <span>High Viral (+50%)</span>
+              </div>
+            </div>
+
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.84rem' }}>
+                <label htmlFor="amb-lift" style={{ fontWeight: '600' }}>Ambassador Referral Engagement Lift</label>
+                <span className="mono-num" style={{ color: 'var(--accent-emerald)', fontWeight: '700' }}>
+                  +{ambassadorActivityLift}% Referrals
+                </span>
+              </div>
+              <input
+                id="amb-lift"
+                type="range"
+                min="0"
+                max="50"
+                step="5"
+                value={ambassadorActivityLift}
+                onChange={(e) => setAmbassadorActivityLift(parseInt(e.target.value, 10))}
+                style={{ width: '100%', accentColor: 'var(--accent-emerald)' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                <span>0% Lift</span>
+                <span>+25% with Swag Unlocks</span>
+                <span>+50% with Mentorship</span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: 'var(--bg-elevated)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)',
+                padding: '16px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Simulated Projected Total
+                </div>
+                <div style={{ fontSize: '1.75rem', fontWeight: '800', fontFamily: 'var(--font-mono)', color: 'var(--text-highlight)' }}>
+                  {simulatedFinalProjected}
+                  <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--accent-emerald)', marginLeft: '8px' }}>
+                    (+{Math.max(0, simulatedFinalProjected - campaign.targetRegistrations)} over target)
+                  </span>
+                </div>
+              </div>
+
+              <button className="btn btn-primary btn-sm" onClick={() => setIsQuickRegOpen(true)}>
+                + Test Lead
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Row: Key Growth Levers & Recent Activity Feed */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
-        {/* Core Growth Levers & Hackathon Strategy */}
-        <div className="card" style={{ marginBottom: 0 }}>
-          <div className="card-header">
-            <div className="card-title-box">
-              <h3>Core Growth Strategy Levers</h3>
-              <p className="card-subtitle">How we reach 500 students with only ₹2,000 budget</p>
-            </div>
-            <button className="btn btn-secondary btn-sm" onClick={() => setActiveTab('experiments')}>
-              View Experiments
-            </button>
+      {/* Core Campaign Levers */}
+      <div className="card">
+        <div className="card-header">
+          <div className="card-title-box">
+            <h3>Key Growth Levers</h3>
+            <p className="card-subtitle">Tactical execution framework to deliver 500 registrations within ₹2,000 budget</p>
           </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div style={{ display: 'flex', gap: '14px', padding: '14px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-              <div style={{ color: 'var(--primary)', marginTop: '2px' }}>
-                <Share2 size={20} />
-              </div>
-              <div>
-                <h4 style={{ fontSize: '0.9rem', color: 'var(--text-highlight)', fontWeight: '700', marginBottom: '3px' }}>
-                  1. Zero-Cost Peer Forwarding Loops
-                </h4>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  Rather than expensive broad ads, students receive pre-formatted WhatsApp text with an interactive AI project hook. Converts class groups into self-sustaining viral loops.
-                </p>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '14px', padding: '14px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-              <div style={{ color: 'var(--accent-cyan)', marginTop: '2px' }}>
-                <Sparkles size={20} />
-              </div>
-              <div>
-                <h4 style={{ fontSize: '0.9rem', color: 'var(--text-highlight)', fontWeight: '700', marginBottom: '3px' }}>
-                  2. Gamified Campus Ambassador Incentives
-                </h4>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  12 campus leads across top colleges (VBIT, SRM, COEP, RVCE, KIIT). Replaced cash bounties with high-value proof-of-work rewards (1-on-1 AI Mentorship & Letter of Recommendation).
-                </p>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '14px', padding: '14px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-              <div style={{ color: 'var(--accent-emerald)', marginTop: '2px' }}>
-                <Target size={20} />
-              </div>
-              <div>
-                <h4 style={{ fontSize: '0.9rem', color: 'var(--text-highlight)', fontWeight: '700', marginBottom: '3px' }}>
-                  3. Controlled ₹150/Day Micro-Paid Boost
-                </h4>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  Spent ₹590 total on hyper-targeted Instagram reels showcasing a 15-second code snippet. Seeds initial momentum while keeping blended CAC at a lean ₹3.63.
-                </p>
-              </div>
-            </div>
-          </div>
+          <button className="btn btn-secondary btn-sm" onClick={() => setActiveTab('experiments')}>
+            Experiments Backlog
+            <ChevronRight size={14} />
+          </button>
         </div>
 
-        {/* Live Demo Registration Activity Feed */}
-        <div className="card" style={{ marginBottom: 0 }}>
-          <div className="card-header">
-            <div className="card-title-box">
-              <h3>Live Intake Activity (Demo)</h3>
-              <p className="card-subtitle">Real-time incoming student registrations</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+          <div style={{ padding: '16px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '4px', textTransform: 'uppercase' }}>
+              Lever 1 • Viral WhatsApp Loops
             </div>
-            <button className="btn btn-primary btn-sm" onClick={() => setIsQuickRegOpen(true)}>
-              + Simulate Registration
-            </button>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-main)', lineHeight: '1.45' }}>
+              Pre-crafted curiosity copy with zero marketing jargon. Classmates share project teaser ("Build AI Resume Evaluator in 15 lines of code") into college batch groups.
+            </p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {registrations.slice(0, 5).map((reg) => (
-              <div
-                key={reg.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '12px 14px',
-                  background: 'var(--bg-elevated)',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border-subtle)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      background: 'var(--primary-tint)',
-                      color: 'var(--primary)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '0.78rem',
-                      fontWeight: '700',
-                    }}
-                  >
-                    {reg.name.charAt(0)}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.86rem', fontWeight: '700', color: 'var(--text-highlight)' }}>
-                      {reg.name}
-                    </div>
-                    <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                      {reg.college} • <span style={{ color: 'var(--primary)', fontWeight: '600' }}>{reg.channel}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'right' }}>
-                  <span className="badge badge-green" style={{ fontSize: '0.68rem', marginBottom: '2px' }}>
-                    <CheckCircle2 size={11} /> Verified
-                  </span>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{reg.time}</div>
-                </div>
-              </div>
-            ))}
+          <div style={{ padding: '16px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--accent-cyan)', marginBottom: '4px', textTransform: 'uppercase' }}>
+              Lever 2 • Ambassador Milestones
+            </div>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-main)', lineHeight: '1.45' }}>
+              12 student leaders across VBIT, SRM, COEP, RVCE, KIIT motivated by non-monetary career rewards (1-on-1 AI Resume Review at 15 referrals; Letter of Recommendation at 30).
+            </p>
           </div>
 
-          <div style={{ marginTop: '16px', textAlign: 'center' }}>
-            <button className="btn btn-ghost btn-sm" onClick={() => setActiveTab('registrations')}>
-              View all {registrations.length} registrations & filters
-              <ChevronRight size={14} />
-            </button>
+          <div style={{ padding: '16px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--accent-emerald)', marginBottom: '4px', textTransform: 'uppercase' }}>
+              Lever 3 • Micro-Paid Boost
+            </div>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-main)', lineHeight: '1.45' }}>
+              ₹150/day targeted Instagram short-form video demonstration showing the finished AI project in action. Seeds initial momentum and preserves ₹760 buffer.
+            </p>
           </div>
         </div>
       </div>

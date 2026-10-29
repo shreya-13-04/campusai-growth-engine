@@ -4,20 +4,17 @@ import {
   Plus,
   CheckCircle2,
   Clock,
-  Archive,
   Award,
-  Sparkles,
   Filter,
-  Flame,
 } from 'lucide-react';
 import { useGrowthData } from '../../context/GrowthDataContext';
-import { MetricCard } from '../MetricCard';
 
 export const ExperimentsTab = () => {
   const {
     experiments,
     addExperiment,
     updateExperimentStatus,
+    showToast,
   } = useGrowthData();
 
   const [statusFilter, setStatusFilter] = useState('all');
@@ -36,7 +33,10 @@ export const ExperimentsTab = () => {
 
   const handleSubmitExperiment = (e) => {
     e.preventDefault();
-    if (!title.trim() || !hypothesis.trim()) return;
+    if (!title.trim() || !hypothesis.trim()) {
+      showToast('Please provide both an experiment title and hypothesis', 'warning');
+      return;
+    }
 
     addExperiment({
       title: title.trim(),
@@ -45,7 +45,7 @@ export const ExperimentsTab = () => {
       impact,
       confidence,
       ease,
-      owner,
+      owner: owner.trim() || 'Growth Ops',
     });
 
     setTitle('');
@@ -65,106 +65,117 @@ export const ExperimentsTab = () => {
   const winnersCount = experiments.filter((e) => e.status === 'Winner').length;
   const activeCount = experiments.filter((e) => e.status === 'Running' || e.status === 'In Progress').length;
   const backlogCount = experiments.filter((e) => e.status === 'Backlog').length;
+  const avgIce = experiments.length > 0
+    ? Math.round(experiments.reduce((sum, e) => sum + e.iceScore, 0) / experiments.length)
+    : 0;
 
   return (
     <div className="view-container">
-      <div className="section-header">
-        <div className="section-title-wrap">
-          <h2>Growth Experiments & ICE Prioritization</h2>
-          <p className="section-desc">
-            Systematic growth backlog ranked by <strong>Impact (1-10) × Confidence (1-10) × Ease (1-10)</strong>. Track validated winners, running tests, and archived learnings.
-          </p>
+      {/* Executive Key Figures Strip */}
+      <div className="executive-kpi-bar">
+        <div className="kpi-cell">
+          <div className="kpi-cell-label">Total Hypotheses Logged</div>
+          <div className="kpi-cell-val">
+            <span className="mono-num">{experiments.length}</span>
+          </div>
+          <div className="kpi-meta">
+            <span className="badge badge-indigo">Active Pool</span>
+            <span className="kpi-caption">Growth backlog</span>
+          </div>
         </div>
+
+        <div className="kpi-cell">
+          <div className="kpi-cell-label">Validated Winners</div>
+          <div className="kpi-cell-val">
+            <span className="mono-num">{winnersCount}</span>
+          </div>
+          <div className="kpi-meta">
+            <span className="badge badge-green">Adopted</span>
+            <span className="kpi-caption">High measured lift</span>
+          </div>
+        </div>
+
+        <div className="kpi-cell">
+          <div className="kpi-cell-label">In Flight / Testing</div>
+          <div className="kpi-cell-val">
+            <span className="mono-num">{activeCount}</span>
+          </div>
+          <div className="kpi-meta">
+            <span className="badge badge-cyan">Gathering Data</span>
+            <span className="kpi-caption">Active cohorts</span>
+          </div>
+        </div>
+
+        <div className="kpi-cell">
+          <div className="kpi-cell-label">Average ICE Score</div>
+          <div className="kpi-cell-val">
+            <span className="mono-num">{avgIce}</span>
+            <span className="kpi-sub">/ 1,000</span>
+          </div>
+          <div className="kpi-meta">
+            <span className="badge badge-amber">Prioritized</span>
+            <span className="kpi-caption">Impact × Conf × Ease</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Header Action Bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+        {/* Filter Tabs */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            className={`btn btn-sm ${statusFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setStatusFilter('all')}
+          >
+            All Hypotheses ({experiments.length})
+          </button>
+          <button
+            className={`btn btn-sm ${statusFilter === 'Winner' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setStatusFilter('Winner')}
+          >
+            Winners ({winnersCount})
+          </button>
+          <button
+            className={`btn btn-sm ${statusFilter === 'Running' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setStatusFilter('Running')}
+          >
+            In Flight ({activeCount})
+          </button>
+          <button
+            className={`btn btn-sm ${statusFilter === 'Backlog' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setStatusFilter('Backlog')}
+          >
+            Backlog ({backlogCount})
+          </button>
+          <button
+            className={`btn btn-sm ${statusFilter === 'Invalidated' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setStatusFilter('Invalidated')}
+          >
+            Archived
+          </button>
+        </div>
+
         <button className="btn btn-primary btn-sm" onClick={() => setIsModalOpen(true)}>
-          <Plus size={16} />
+          <Plus size={15} />
           + Propose Growth Hack
         </button>
       </div>
 
-      {/* KPI Stats */}
-      <div className="kpi-grid">
-        <MetricCard
-          label="Total Experiments Logged"
-          value={experiments.length}
-          subtext="Growth hypothesis test pool"
-          icon={FlaskConical}
-          badgeText="Active Backlog"
-          badgeType="neutral"
-          accentColor="#6D5CE8"
-        />
-
-        <MetricCard
-          label="Validated Winners"
-          value={winnersCount}
-          subtext="Implemented high-lift tactics"
-          icon={Award}
-          badgeText="Proven Lift"
-          badgeType="positive"
-          accentColor="#10B981"
-        />
-
-        <MetricCard
-          label="Running in Flight"
-          value={activeCount}
-          subtext="Currently gathering cohort data"
-          icon={Clock}
-          badgeText="Testing"
-          badgeType="warning"
-          accentColor="#0284C7"
-        />
-
-        <MetricCard
-          label="Average ICE Score"
-          value={Math.round(experiments.reduce((sum, e) => sum + e.iceScore, 0) / experiments.length)}
-          subtext="Max possible: 1,000"
-          icon={Flame}
-          badgeText="High Conviction"
-          badgeType="positive"
-          accentColor="#D97706"
-        />
-      </div>
-
-      {/* Filter Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        <button
-          className={`btn btn-sm ${statusFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setStatusFilter('all')}
-        >
-          All Experiments ({experiments.length})
-        </button>
-        <button
-          className={`btn btn-sm ${statusFilter === 'Winner' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setStatusFilter('Winner')}
-        >
-          🏆 Winners ({winnersCount})
-        </button>
-        <button
-          className={`btn btn-sm ${statusFilter === 'Running' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setStatusFilter('Running')}
-        >
-          ⚡ In Flight / Testing ({activeCount})
-        </button>
-        <button
-          className={`btn btn-sm ${statusFilter === 'Backlog' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setStatusFilter('Backlog')}
-        >
-          📋 Planned Backlog ({backlogCount})
-        </button>
-        <button
-          className={`btn btn-sm ${statusFilter === 'Invalidated' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setStatusFilter('Invalidated')}
-        >
-          📁 Archived / Invalidated
-        </button>
-      </div>
-
       {/* Experiments Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px' }}>
         {filteredExperiments.map((exp) => {
           let statusBadgeClass = 'badge-indigo';
-          if (exp.status === 'Winner') statusBadgeClass = 'badge-green';
-          if (exp.status === 'Running' || exp.status === 'In Progress') statusBadgeClass = 'badge-gold';
-          if (exp.status === 'Invalidated') statusBadgeClass = 'badge-rose';
+          let borderAccent = 'var(--primary)';
+          if (exp.status === 'Winner') {
+            statusBadgeClass = 'badge-green';
+            borderAccent = 'var(--accent-emerald)';
+          } else if (exp.status === 'Running' || exp.status === 'In Progress') {
+            statusBadgeClass = 'badge-amber';
+            borderAccent = 'var(--accent-amber)';
+          } else if (exp.status === 'Invalidated') {
+            statusBadgeClass = 'badge-rose';
+            borderAccent = 'var(--accent-rose)';
+          }
 
           return (
             <div
@@ -175,25 +186,23 @@ export const ExperimentsTab = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                borderLeft: `4px solid ${
-                  exp.status === 'Winner' ? '#10b981' : exp.status === 'Running' || exp.status === 'In Progress' ? '#f59e0b' : exp.status === 'Invalidated' ? '#f43f5e' : '#6366f1'
-                }`,
+                borderLeft: `4px solid ${borderAccent}`,
               }}
             >
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                   <span className={`badge ${statusBadgeClass}`}>
-                    {exp.status === 'Winner' ? '🏆 Winner' : exp.status}
+                    {exp.status === 'Winner' ? 'Validated Winner' : exp.status}
                   </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>ICE Score:</span>
-                    <strong style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-highlight)', fontSize: '0.95rem' }}>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>ICE Score:</span>
+                    <strong className="mono-num" style={{ color: 'var(--text-highlight)', fontSize: '0.95rem' }}>
                       {exp.iceScore}
                     </strong>
                   </div>
                 </div>
 
-                <h3 style={{ fontSize: '1.02rem', fontWeight: '700', color: 'var(--text-highlight)', marginBottom: '6px' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-highlight)', marginBottom: '4px' }}>
                   {exp.title}
                 </h3>
 
@@ -201,15 +210,15 @@ export const ExperimentsTab = () => {
                   Channel: <strong>{exp.channel}</strong> • Owner: {exp.owner} • {exp.date}
                 </div>
 
-                <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginBottom: '14px', lineHeight: '1.5' }}>
+                <p style={{ fontSize: '0.84rem', color: 'var(--text-main)', marginBottom: '14px', lineHeight: '1.5' }}>
                   <strong>Hypothesis:</strong> {exp.hypothesis}
                 </p>
 
                 {/* Submetrics: Impact, Confidence, Ease */}
                 <div style={{ display: 'flex', gap: '14px', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: '14px', fontSize: '0.76rem' }}>
-                  <span>Impact: <strong>{exp.impact}/10</strong></span>
-                  <span>Confidence: <strong>{exp.confidence}/10</strong></span>
-                  <span>Ease: <strong>{exp.ease}/10</strong></span>
+                  <span>Impact: <strong className="mono-num">{exp.impact}/10</strong></span>
+                  <span>Confidence: <strong className="mono-num">{exp.confidence}/10</strong></span>
+                  <span>Ease: <strong className="mono-num">{exp.ease}/10</strong></span>
                 </div>
 
                 {exp.keyLearning && (
@@ -231,7 +240,7 @@ export const ExperimentsTab = () => {
 
               {/* Status Update Control */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' }}>
-                <span style={{ fontSize: '0.74rem', color: 'var(--text-dim)' }}>Change Status:</span>
+                <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Update Status:</span>
                 <select
                   value={exp.status}
                   onChange={(e) => updateExperimentStatus(exp.id, e.target.value)}
@@ -249,128 +258,139 @@ export const ExperimentsTab = () => {
         })}
       </div>
 
-      {/* Propose Growth Hack Modal */}
+      {/* Propose Experiment Modal */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">Propose New Growth Experiment</h3>
-              <button className="btn btn-ghost btn-sm" onClick={() => setIsModalOpen(false)}>
-                ✕
-              </button>
+              <h3 className="modal-title">Propose Growth Hypothesis</h3>
+              <button className="btn btn-ghost btn-sm" onClick={() => setIsModalOpen(false)}>✕</button>
             </div>
             <form onSubmit={handleSubmitExperiment}>
               <div className="modal-body">
                 <div className="form-group">
-                  <label className="form-label">Experiment Name / Growth Hack *</label>
+                  <label htmlFor="exp-title" className="form-label">Tactic / Experiment Title *</label>
                   <input
+                    id="exp-title"
                     type="text"
                     required
                     className="form-input"
-                    placeholder="e.g. Hostel Common Room QR Challenge"
+                    placeholder="e.g. 1-Click WhatsApp Forwarding Button with Project Teaser"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                   />
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Target Channel</label>
-                  <select className="form-select" value={channel} onChange={(e) => setChannel(e.target.value)}>
-                    <option value="WhatsApp">WhatsApp Peer Loops</option>
-                    <option value="Ambassador Network">Campus Ambassador Network</option>
-                    <option value="Instagram Paid">Instagram Paid Boost</option>
-                    <option value="College Clubs">College Tech Clubs (Discord/Slack)</option>
-                    <option value="LinkedIn Direct">LinkedIn Student Posts</option>
-                    <option value="Offline / Lab Posters">Offline / Lab Posters</option>
-                  </select>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="form-group">
+                    <label htmlFor="exp-channel" className="form-label">Primary Channel</label>
+                    <select
+                      id="exp-channel"
+                      className="form-select"
+                      value={channel}
+                      onChange={(e) => setChannel(e.target.value)}
+                    >
+                      <option value="WhatsApp">WhatsApp Peer Loops</option>
+                      <option value="Ambassador Network">Campus Ambassadors</option>
+                      <option value="College Clubs">College Tech Clubs</option>
+                      <option value="Instagram Paid">Instagram Reels Boost</option>
+                      <option value="Offline / Lab Posters">Lab Notice Posters / QR</option>
+                      <option value="LinkedIn Direct">LinkedIn Student Outreach</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="exp-owner" className="form-label">Lead / Owner</label>
+                    <input
+                      id="exp-owner"
+                      type="text"
+                      className="form-input"
+                      value={owner}
+                      onChange={(e) => setOwner(e.target.value)}
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Hypothesis (If X, then Y because Z) *</label>
+                  <label htmlFor="exp-hypo" className="form-label">Hypothesis & Proposed Change *</label>
                   <textarea
+                    id="exp-hypo"
                     required
-                    rows="3"
                     className="form-textarea"
-                    placeholder="If we provide a 1-click WhatsApp forward text with the project GIF preview, then forward rates will double because..."
+                    rows="3"
+                    placeholder="If we [action/hook], then [expected result] because [reason]..."
                     value={hypothesis}
                     onChange={(e) => setHypothesis(e.target.value)}
                   />
                 </div>
 
                 {/* ICE Sliders */}
-                <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', padding: '16px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
+                <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '14px', marginTop: '12px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-highlight)' }}>
-                      ICE Scoring Parameters
-                    </span>
-                    <span style={{ fontSize: '0.86rem', color: 'var(--primary)', fontFamily: 'var(--font-mono)', fontWeight: '800' }}>
-                      Calculated ICE Score: {liveIceScore}
+                    <span style={{ fontSize: '0.82rem', fontWeight: '700' }}>ICE Prioritization Matrix</span>
+                    <span className="badge badge-indigo">
+                      Calculated ICE: <strong className="mono-num" style={{ marginLeft: '4px' }}>{liveIceScore}</strong>
                     </span>
                   </div>
 
-                  <div style={{ marginBottom: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem', marginBottom: '4px' }}>
-                      <span>Impact (1-10):</span>
-                      <strong>{impact}</strong>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px' }}>
+                        <label htmlFor="impact-range">Impact: <strong>{impact}</strong> / 10</label>
+                        <span style={{ color: 'var(--text-muted)' }}>Estimated registration volume lift</span>
+                      </div>
+                      <input
+                        id="impact-range"
+                        type="range"
+                        min="1"
+                        max="10"
+                        value={impact}
+                        onChange={(e) => setImpact(Number(e.target.value))}
+                        style={{ width: '100%', accentColor: 'var(--primary)' }}
+                      />
                     </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={impact}
-                      onChange={(e) => setImpact(parseInt(e.target.value, 10))}
-                      style={{ width: '100%', accentColor: 'var(--primary)' }}
-                    />
-                  </div>
 
-                  <div style={{ marginBottom: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem', marginBottom: '4px' }}>
-                      <span>Confidence (1-10):</span>
-                      <strong>{confidence}</strong>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px' }}>
+                        <label htmlFor="conf-range">Confidence: <strong>{confidence}</strong> / 10</label>
+                        <span style={{ color: 'var(--text-muted)' }}>Certainty based on past test data</span>
+                      </div>
+                      <input
+                        id="conf-range"
+                        type="range"
+                        min="1"
+                        max="10"
+                        value={confidence}
+                        onChange={(e) => setConfidence(Number(e.target.value))}
+                        style={{ width: '100%', accentColor: 'var(--primary)' }}
+                      />
                     </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={confidence}
-                      onChange={(e) => setConfidence(parseInt(e.target.value, 10))}
-                      style={{ width: '100%', accentColor: 'var(--accent-cyan)' }}
-                    />
-                  </div>
 
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem', marginBottom: '4px' }}>
-                      <span>Ease / Speed to Implement (1-10):</span>
-                      <strong>{ease}</strong>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px' }}>
+                        <label htmlFor="ease-range">Ease: <strong>{ease}</strong> / 10</label>
+                        <span style={{ color: 'var(--text-muted)' }}>Speed to execute (10 = &lt; 2 hrs)</span>
+                      </div>
+                      <input
+                        id="ease-range"
+                        type="range"
+                        min="1"
+                        max="10"
+                        value={ease}
+                        onChange={(e) => setEase(Number(e.target.value))}
+                        style={{ width: '100%', accentColor: 'var(--primary)' }}
+                      />
                     </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={ease}
-                      onChange={(e) => setEase(parseInt(e.target.value, 10))}
-                      style={{ width: '100%', accentColor: 'var(--accent-emerald)' }}
-                    />
                   </div>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Tactic Owner / Lead</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="e.g. Growth Lead or Campus Team"
-                    value={owner}
-                    onChange={(e) => setOwner(e.target.value)}
-                  />
                 </div>
               </div>
+
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  Add to Experiment Backlog
+                  Log Growth Experiment
                 </button>
               </div>
             </form>

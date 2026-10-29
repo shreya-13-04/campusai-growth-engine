@@ -23,14 +23,15 @@ export const Header = ({ isMobileOpen, setIsMobileOpen }) => {
   } = useGrowthData();
 
   const tabTitles = {
-    overview: 'Campaign Overview & Ops Cockpit',
-    progress: 'Registration Velocity & Run-rate Trajectory',
-    channels: 'Acquisition Channels & Unit Economics',
-    ambassadors: 'Campus Ambassador Network Leaderboard',
-    referrals: 'Referral Engine & Code Generator',
+    overview: 'Campaign Overview & Run-Rate Trajectory',
+    progress: 'Campaign Overview & Run-Rate Trajectory',
+    acquisition: 'Acquisition Channels & Outreach Studio',
+    channels: 'Acquisition Channels & Outreach Studio',
+    studio: 'Acquisition Channels & Outreach Studio',
+    referrals: 'Campus Referral Engine & Ambassador Leaderboard',
+    ambassadors: 'Campus Referral Engine & Ambassador Leaderboard',
     experiments: 'Growth Experiments Management (ICE)',
-    studio: 'AI Outreach Studio (Template-Assisted)',
-    registrations: 'Demo Registrations Data Intake',
+    registrations: 'Student Registrations Roster & Audit Log',
   };
 
   return (

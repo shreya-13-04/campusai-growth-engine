@@ -59,7 +59,21 @@ export const GrowthDataProvider = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSimModalOpen, setIsSimModalOpen] = useState(false);
   const [isQuickRegOpen, setIsQuickRegOpen] = useState(false);
-  const [activeReferralCode, setActiveReferralCode] = useState('');
+  const [activeReferralCode, setActiveReferralCode] = useState(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const ref = params.get('ref') || params.get('referral');
+        if (ref) {
+          const clean = ref.trim().toUpperCase();
+          localStorage.setItem('campusai_ref_code', clean);
+          return clean;
+        }
+        return localStorage.getItem('campusai_ref_code') || '';
+      }
+    } catch {}
+    return '';
+  });
   const [toast, setToast] = useState(null);
 
   // Load from localStorage or fallback to deep cloned initial defaults
@@ -117,11 +131,29 @@ export const GrowthDataProvider = ({ children }) => {
     }
   });
 
-  // Query parameter attribution detection on initial mount
+  // Query parameter attribution & tab detection on initial mount
   useEffect(() => {
     try {
       if (typeof window !== 'undefined' && window.location?.search) {
         const params = new URLSearchParams(window.location.search);
+        
+        // Tab parameter handling with legacy normalization
+        const tabParam = params.get('tab');
+        if (tabParam) {
+          const lower = tabParam.toLowerCase();
+          if (lower === 'channels' || lower === 'studio' || lower === 'acquisition') {
+            setActiveTab('acquisition');
+          } else if (lower === 'ambassadors' || lower === 'referrals') {
+            setActiveTab('referrals');
+          } else if (lower === 'progress' || lower === 'overview') {
+            setActiveTab('overview');
+          } else if (lower === 'experiments') {
+            setActiveTab('experiments');
+          } else if (lower === 'registrations') {
+            setActiveTab('registrations');
+          }
+        }
+
         const refParam = params.get('ref') || params.get('referral');
         if (refParam) {
           const cleanParam = refParam.trim().toUpperCase();

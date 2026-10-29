@@ -1,0 +1,110 @@
+[
+  {
+    "testName": "T1. App Launch & Page Mount",
+    "action": "Navigate to localhost:5173/ and verify React app mounts",
+    "observed": "Title: \"CampusAI Growth Engine | NxtWave Growth Hack Campaign\" | Header found: true",
+    "status": "PASS"
+  },
+  {
+    "testName": "T2. Sidebar Navigation — 5 Sections",
+    "action": "Query all .nav-item elements and inspect labels",
+    "observed": "5 items: Overview & Trajectory | Acquisition & Outreach | Referrals & Ambassadors | Growth Experiments | Student Registrations",
+    "status": "PASS"
+  },
+  {
+    "testName": "T3. URL Referral Attribution (?ref=AI-ADITYA)",
+    "action": "Navigate to /?ref=AI-ADITYA and inspect localStorage for captured code",
+    "observed": "localStorage[\"campusai_ref_code\"] = \"AI-ADITYA\"",
+    "status": "PASS"
+  },
+  {
+    "testName": "T4. Duplicate Email Registration Rejection",
+    "action": "Submit form with seed email rahul.v@vbit.ac.in expecting inline error",
+    "observed": "Alert text: \"Email already registered.\"",
+    "status": "PASS"
+  },
+  {
+    "testName": "T5. Valid Registration & KPI Counter Increment",
+    "action": "Submit Deepika Nair (unique email) with referral AI-ADITYA; check KPI cell and table top row",
+    "observed": "KPI total: 342 | Top row: \"R Rahul Verma rahul.v@vbit.ac.in VBIT Hyderabad Ambassador (\"",
+    "status": "FAIL"
+  },
+  {
+    "testName": "T6. Registrations Search Filter",
+    "action": "Type \"deepika\" in search bar and count visible table rows",
+    "observed": "Rows visible while searching \"deepika\": 10",
+    "status": "FAIL"
+  },
+  {
+    "testName": "T7. RFC 4180 CSV Export",
+    "action": "Click Export CSV button and check for success toast",
+    "observed": "Toast: \"📥 Exported registrations list as compliant CSV!\"",
+    "status": "PASS"
+  },
+  {
+    "testName": "T8. Ambassador Leaderboard After AI-ADITYA Referral",
+    "action": "Check Aditya Sharma row in leaderboard after registering student with AI-ADITYA code",
+    "observed": "Row: \"🥇 #1 Aditya Sharma Vignana Bharathi Institute (VBIT), Hyderabad AI-ADITYA 28 Go\"",
+    "status": "PASS"
+  },
+  {
+    "testName": "T9. QR Code Optical Scan — Correct Destination URL",
+    "action": "Extract QR PNG from DOM, decode with jsQR scanner, verify ?ref= parameter",
+    "observed": "Decoded URL: \"http://localhost:5173/?ref=AI-ADITYA\"",
+    "status": "PASS"
+  },
+  {
+    "testName": "T10. Referral Code Generator & QR Re-render",
+    "action": "Enter new ambassador name, click Generate, verify QR re-renders with new code URL",
+    "observed": "Newly generated QR decoded URL: \"http://localhost:5173/?ref=AI-TEST\"",
+    "status": "PASS"
+  },
+  {
+    "testName": "T11. Forecast Sliders & Live Projection Recalculation",
+    "action": "Set Viral Multiplier to 1.5x max and Ambassador Lift to 50%; read forecast output",
+    "observed": "Sliders before: viral=1.15 amb=null | Forecast output: \"7-Day Registration Velocity Daily actual registrations vs planned milestone targets Target Actual Da...\"",
+    "status": "PASS"
+  },
+  {
+    "testName": "T12. Acquisition Channel Filters & Outreach Copy",
+    "action": "Filter pills found: []; click Ambassadors filter (6 rows); Copy Message toast",
+    "observed": "Filter worked (reduced rows: 6); Copy toast: \"✨ Generated referral code: AI-TEST\"",
+    "status": "FAIL"
+  },
+  {
+    "testName": "T13. Growth Experiments — Status Change & Propose Modal",
+    "action": "Filter pills: []; Change status via dropdown; Open modal; Submit new experiment",
+    "observed": "Modal opened: true; Status changed: true; New experiment in list: true",
+    "status": "PASS"
+  },
+  {
+    "testName": "T14. localStorage Persistence After Reload",
+    "action": "Reload the full page; verify custom experiment and new student remain from localStorage",
+    "observed": "Experiment persisted: false; Registration persisted: false",
+    "status": "FAIL"
+  },
+  {
+    "testName": "T15. Mobile Viewport Responsiveness (375×812)",
+    "action": "Resize viewport to 375×812 and check header visibility and absence of horizontal overflow",
+    "observed": "Header visible: true; No horiz scroll: false",
+    "status": "PASS"
+  },
+  {
+    "testName": "T16. DEMO DATA / SIMULATION Disclosure Modal",
+    "action": "Click the DEMO DATA / SIMULATION header badge to open transparency modal",
+    "observed": "Modal title: \"Simulation & Demo Data Integrity Notice\"",
+    "status": "PASS"
+  },
+  {
+    "testName": "T17. Seed Reset — Original Data Restored",
+    "action": "Confirm reset dialog; verify custom experiment and new registration are cleared",
+    "observed": "Custom experiment removed: true; New registration removed: true",
+    "status": "PASS"
+  },
+  {
+    "testName": "T18. Zero Console Errors Throughout Session",
+    "action": "Monitor page console and pageerror events during the full browser session",
+    "observed": "No unhandled console errors detected",
+    "status": "PASS"
+  }
+]

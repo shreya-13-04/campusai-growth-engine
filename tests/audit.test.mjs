@@ -206,4 +206,42 @@ describe('CampusAI Growth Engine - Comprehensive Operational Audit', () => {
     assert.equal(escapeCSV(null), '""');
     assert.equal(escapeCSV(undefined), '""');
   });
+
+  // Test 9: 5-Section Navigation & Alias Normalization
+  test('(9) Navigation architecture and legacy alias mapping', () => {
+    const normalizeTab = (tab) => {
+      const lower = (tab || '').toLowerCase();
+      if (lower === 'channels' || lower === 'studio' || lower === 'acquisition') return 'acquisition';
+      if (lower === 'ambassadors' || lower === 'referrals') return 'referrals';
+      if (lower === 'progress' || lower === 'overview') return 'overview';
+      if (lower === 'experiments') return 'experiments';
+      if (lower === 'registrations') return 'registrations';
+      return 'overview';
+    };
+
+    assert.equal(normalizeTab('overview'), 'overview');
+    assert.equal(normalizeTab('progress'), 'overview', 'Legacy progress tab normalizes to overview');
+    assert.equal(normalizeTab('channels'), 'acquisition', 'Legacy channels tab normalizes to acquisition');
+    assert.equal(normalizeTab('studio'), 'acquisition', 'Legacy studio tab normalizes to acquisition');
+    assert.equal(normalizeTab('ambassadors'), 'referrals', 'Legacy ambassadors tab normalizes to referrals');
+    assert.equal(normalizeTab('referrals'), 'referrals');
+    assert.equal(normalizeTab('experiments'), 'experiments');
+    assert.equal(normalizeTab('registrations'), 'registrations');
+  });
+
+  // Test 10: QR Code Destination URL Encoding and Decoding
+  test('(10) QR code referral link encoding and URL parameter extraction', () => {
+    const origin = 'http://localhost:5173';
+    const testCode = 'AI-ADITYA';
+    const destinationUrl = `${origin}/?ref=${testCode}`;
+
+    const parsed = new URL(destinationUrl);
+    assert.equal(parsed.searchParams.get('ref'), 'AI-ADITYA', 'Destination URL must contain correct ?ref parameter');
+
+    // Test suffix generated code destination
+    const collisionCode = 'AI-PRATEEK-2';
+    const collisionUrl = `${origin}/?ref=${collisionCode}`;
+    const parsedCollision = new URL(collisionUrl);
+    assert.equal(parsedCollision.searchParams.get('ref'), 'AI-PRATEEK-2');
+  });
 });

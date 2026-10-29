@@ -592,6 +592,76 @@ button {
   letter-spacing: 0.05em;
 }
 
+/* Executive Metric Strip (Distinctive, Editorial, Human-Designed) */
+.executive-kpi-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--border-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.kpi-cell {
+  background: var(--bg-card);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all var(--transition-fast);
+}
+
+.kpi-cell:hover {
+  background: var(--bg-card-hover);
+  cursor: pointer;
+}
+
+.kpi-cell-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.kpi-cell-val {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-highlight);
+  line-height: 1.2;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.kpi-sub {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.kpi-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 0.72rem;
+}
+
+.kpi-caption {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.mono-num {
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+}
+
 /* KPI Card Grid */
 .kpi-grid {
   display: grid;
